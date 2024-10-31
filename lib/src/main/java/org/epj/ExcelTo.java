@@ -15,6 +15,8 @@ limitations under the License.
 */
 package org.epj;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +31,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFSimpleShape;
@@ -41,6 +44,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFSimpleShape;
+import java.net.URL;
 
 /**
  * Convert Excel to pdf or text
@@ -66,6 +70,14 @@ public class ExcelTo {
         Objects.requireNonNull(book);
         Objects.requireNonNull(out);
         try (PDFPrinter printer = new PDFPrinter()) {
+            ClassLoader classLoader = ExcelTo.class.getClassLoader();
+            try (InputStream fontStream = classLoader.getResourceAsStream("fonts/NotoSansJP-VariableFont_wght.ttf")) {
+                if (fontStream == null) {
+                    throw new FileNotFoundException("Font file not found in resources.");
+                }
+                // InputStreamを使用してフォントを設定
+                printer.setFont(PDType0Font.load(printer.getDocument(), fontStream));
+            }
             printer.documentSetup = Optional.ofNullable(documentSetup);
             for (int i = 0, end = book.getNumberOfSheets(); i < end; i++) {
                 Sheet sheet = book.getSheetAt(i);

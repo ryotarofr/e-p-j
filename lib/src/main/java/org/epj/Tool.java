@@ -15,6 +15,8 @@ limitations under the License.
 */
 package org.epj;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
@@ -30,6 +32,10 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 
 import com.github.mygreen.cellformatter.POICellFormatter;
 
@@ -90,33 +96,106 @@ public class Tool {
      */
     public static Optional<String> cellValue(Cell cell) {
         String text = null;
-        try {
-            text = formatter.formatAsString(cell, Locale.JAPAN);
-        } catch (IllegalStateException e) {
-            switch (cell.getCellType()) {
 
-                case BOOLEAN:
-                    text = String.valueOf(cell.getBooleanCellValue());
-                    break;
-                case STRING:
-                    text = cell.getStringCellValue();
-                    break;
-                case NUMERIC:
-                    text = String.valueOf(cell.getNumericCellValue());
-                    break;
-                case ERROR:
-                    text = String.valueOf(cell.getErrorCellValue());
-                    break;
-                case BLANK:
-                    break;
-                case FORMULA:
-                    break;
-                case _NONE:
-                    break;
-            }
+        if (cell == null) {
+            return Optional.empty();
         }
+
+        switch (cell.getCellType()) {
+            case BOOLEAN:
+                text = String.valueOf(cell.getBooleanCellValue());
+                break;
+            case STRING:
+                text = cell.getStringCellValue();
+                break;
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    // 日付の場合のフォーマット
+                    DataFormatter dateFormatter = new DataFormatter(Locale.JAPAN);
+                    text = dateFormatter.formatCellValue(cell);
+                } else {
+                    // 数値の場合のフォーマット
+                    NumberFormat numberFormat = DecimalFormat.getInstance(Locale.JAPAN);
+                    text = numberFormat.format(cell.getNumericCellValue());
+                }
+                break;
+            case FORMULA:
+                // 数式セルの処理
+                try {
+                    FormulaEvaluator evaluator = cell.getSheet().getWorkbook().getCreationHelper()
+                            .createFormulaEvaluator();
+                    CellValue cellValue = evaluator.evaluate(cell);
+
+                    if (cellValue != null) {
+                        switch (cellValue.getCellType()) {
+                            case BOOLEAN:
+                                text = String.valueOf(cellValue.getBooleanValue());
+                                break;
+                            case STRING:
+                                text = cellValue.getStringValue();
+                                break;
+                            case NUMERIC:
+                                if (DateUtil.isCellDateFormatted(cell)) {
+                                    DataFormatter dateFormatter = new DataFormatter(Locale.JAPAN);
+                                    text = dateFormatter.formatCellValue(cell);
+                                } else {
+                                    NumberFormat numberFormat = DecimalFormat.getInstance(Locale.JAPAN);
+                                    text = numberFormat.format(cellValue.getNumberValue());
+                                }
+                                break;
+                            case ERROR:
+                                text = "Error: " + cellValue.getErrorValue();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                } catch (Exception ex) {
+                    text = "Error evaluating formula";
+                }
+                break;
+            case ERROR:
+                text = "Error: " + cell.getErrorCellValue();
+                break;
+            case BLANK:
+                text = "";
+                break;
+            default:
+                break;
+        }
+
         return Optional.ofNullable(text).filter(((Predicate<String>) String::isEmpty).negate());
     }
+    // public static Optional<String> cellValue(Cell cell) {
+    // String text = null;
+    // try {
+    // text = formatter.formatAsString(cell, Locale.JAPAN);
+    // } catch (IllegalStateException e) {
+    // switch (cell.getCellType()) {
+
+    // case BOOLEAN:
+    // text = String.valueOf(cell.getBooleanCellValue());
+    // break;
+    // case STRING:
+    // text = cell.getStringCellValue();
+    // break;
+    // case NUMERIC:
+    // text = String.valueOf(cell.getNumericCellValue());
+    // break;
+    // case ERROR:
+    // text = String.valueOf(cell.getErrorCellValue());
+    // break;
+    // case BLANK:
+    // break;
+    // case FORMULA:
+    // break;
+    // case _NONE:
+    // break;
+    // }
+    // }
+    // return Optional.ofNullable(text).filter(((Predicate<String>)
+    // String::isEmpty).negate());
+    // }
 
     /**
      * @param text  target text
