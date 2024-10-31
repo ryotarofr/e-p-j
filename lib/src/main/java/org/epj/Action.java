@@ -13,25 +13,41 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package jp.qpg;
+package org.epj;
+
+import java.util.Objects;
 
 /**
- * end of text throwable for Parser
+ * functional interface that add andThen and noop to Runnable
  * 
  * @author nakazawaken1
- *
  */
-@SuppressWarnings("serial")
-public class EndOfText extends Throwable {
+public interface Action {
 
     /**
-     * hidden
+     * run
      */
-    protected EndOfText() {
+    void run();
+
+    /**
+     * combine action
+     * 
+     * @param after after action
+     * @return action
+     */
+    default Action andThen(Action after) {
+        Objects.requireNonNull(after);
+        return () -> {
+            run();
+            after.run();
+        };
     }
 
     /**
-     * Singleton
+     * @return no operation
      */
-    public static final EndOfText instance = new EndOfText();
+    static Action noop() {
+        return () -> {
+        };
+    }
 }

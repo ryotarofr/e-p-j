@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package jp.qpg;
+package org.epj;
 
 import java.util.stream.IntStream;
 
@@ -153,7 +153,8 @@ public class Parser {
      * @return -1 if not found word, index if found
      */
     int indexOf(int... letters) {
-        return IntStream.of(letters).map(i -> source.indexOf(String.valueOf((char) i), index)).filter(i -> i >= 0).min().orElse(-1);
+        return IntStream.of(letters).map(i -> source.indexOf(String.valueOf((char) i), index)).filter(i -> i >= 0).min()
+                .orElse(-1);
     }
 
     /**
@@ -165,7 +166,7 @@ public class Parser {
     String line() throws EndOfText {
         int lineEnd = indexOf('\r', '\n');
         if (lineEnd < 0) {
-            if(index < lastIndex) {
+            if (index < lastIndex) {
                 return substring(lastIndex);
             }
             throw EndOfText.instance;

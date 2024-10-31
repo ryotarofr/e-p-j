@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package jp.qpg;
+package org.epj;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -44,34 +44,35 @@ public class Formatter {
     /**
      * processing top,bottom,left,right parameters
      * 
-     * @param parts parts
-     * @param top top action
+     * @param parts  parts
+     * @param top    top action
      * @param bottom bottom action
-     * @param left left action
-     * @param right right action
+     * @param left   left action
+     * @param right  right action
      */
-    static void tblr(String[] parts, Consumer<Float> top, Consumer<Float> bottom, Consumer<Float> left, Consumer<Float> right) {
+    static void tblr(String[] parts, Consumer<Float> top, Consumer<Float> bottom, Consumer<Float> left,
+            Consumer<Float> right) {
         Tool.real(parts[2]).ifPresent(value -> {
             if (parts.length > 2) {
                 parts[1].chars().forEach(c -> {
                     Optional<String> position = Optional.empty();
                     switch (Character.toUpperCase(c)) {
-                    case 'T':
-                        top.accept(value);
-                        position = Optional.of("top");
-                        break;
-                    case 'B':
-                        bottom.accept(value);
-                        position = Optional.of("bottom");
-                        break;
-                    case 'L':
-                        left.accept(value);
-                        position = Optional.of("left");
-                        break;
-                    case 'R':
-                        right.accept(value);
-                        position = Optional.of("right");
-                        break;
+                        case 'T':
+                            top.accept(value);
+                            position = Optional.of("top");
+                            break;
+                        case 'B':
+                            bottom.accept(value);
+                            position = Optional.of("bottom");
+                            break;
+                        case 'L':
+                            left.accept(value);
+                            position = Optional.of("left");
+                            break;
+                        case 'R':
+                            right.accept(value);
+                            position = Optional.of("right");
+                            break;
                     }
                     position.ifPresent(i -> logger.info(parts[0] + " " + i + ": " + value));
                 });
@@ -88,7 +89,7 @@ public class Formatter {
     /**
      * format marked text to PDF
      * 
-     * @param source marked text
+     * @param source  marked text
      * @param printer PDF printer
      */
     public static void format(String source, PDFPrinter printer) {
@@ -105,15 +106,17 @@ public class Formatter {
                             for (String part : parts) {
                                 String[] p = part.split("\\-");
                                 switch (p[0]) {
-                                case "page":
-                                    PDRectangle pageSize = Try.to(() -> (PDRectangle) PDRectangle.class.getDeclaredField(p[1].toUpperCase()).get(null)).get();
-                                    boolean isLandscape = p.length > 2 && p[2].toUpperCase().charAt(0) == 'H';
-                                    logger.info("pageSize: " + p[1] + ", isLandscape: " + isLandscape);
-                                    printer.newPage().setPageSize(pageSize, isLandscape);
-                                    break;
-                                case "margin":
-                                    tblr(p, i -> printer.marginTop = i, i -> printer.marginBottom = i, i -> printer.marginLeft = i,
-                                            i -> printer.marginRight = i);
+                                    case "page":
+                                        PDRectangle pageSize = Try.to(() -> (PDRectangle) PDRectangle.class
+                                                .getDeclaredField(p[1].toUpperCase()).get(null)).get();
+                                        boolean isLandscape = p.length > 2 && p[2].toUpperCase().charAt(0) == 'H';
+                                        logger.info("pageSize: " + p[1] + ", isLandscape: " + isLandscape);
+                                        printer.newPage().setPageSize(pageSize, isLandscape);
+                                        break;
+                                    case "margin":
+                                        tblr(p, i -> printer.marginTop = i, i -> printer.marginBottom = i,
+                                                i -> printer.marginLeft = i,
+                                                i -> printer.marginRight = i);
                                 }
                             }
                             continue;
@@ -121,15 +124,15 @@ public class Formatter {
                         String[] pair = parser.line().split(" +", 2);
                         String[] parts = pair[0].split(":");
                         switch (parts[0]) {
-                        case "header":
-                            logger.info("header");
-                            break;
-                        case "footer":
-                            logger.info("footer");
-                            break;
-                        case "table":
-                            logger.info("table");
-                            break;
+                            case "header":
+                                logger.info("header");
+                                break;
+                            case "footer":
+                                logger.info("footer");
+                                break;
+                            case "table":
+                                logger.info("table");
+                                break;
                         }
                         do {
                             printLine(printer, parser);
@@ -149,7 +152,7 @@ public class Formatter {
      * print line
      * 
      * @param printer printer
-     * @param parser parser
+     * @param parser  parser
      * @throws EndOfText end of text
      */
     private static void printLine(PDFPrinter printer, Parser parser) throws EndOfText {
@@ -165,23 +168,23 @@ public class Formatter {
         for (String part : parts) {
             String[] p = part.split("\\-");
             switch (p[0]) {
-            case "left":
-                break;
-            case "center":
-                write = printer::printCenter;
-                break;
-            case "right":
-                write = printer::printRight;
-                break;
-            default:
-                if (p[0].endsWith("%")) {
-                    float fontSize = printer.fontSize;
-                    int zoom = Tool.integer(Tool.substr(p[0], 0, -1)).orElse(100);
-                    if (zoom != 100) {
-                        before = before.andThen(() -> printer.setFontSize(fontSize * zoom / 100));
-                        after = after.andThen(() -> printer.setFontSize(fontSize));
+                case "left":
+                    break;
+                case "center":
+                    write = printer::printCenter;
+                    break;
+                case "right":
+                    write = printer::printRight;
+                    break;
+                default:
+                    if (p[0].endsWith("%")) {
+                        float fontSize = printer.fontSize;
+                        int zoom = Tool.integer(Tool.substr(p[0], 0, -1)).orElse(100);
+                        if (zoom != 100) {
+                            before = before.andThen(() -> printer.setFontSize(fontSize * zoom / 100));
+                            after = after.andThen(() -> printer.setFontSize(fontSize));
+                        }
                     }
-                }
             }
         }
         before.run();
@@ -205,9 +208,9 @@ public class Formatter {
                 throw new UncheckedIOException(e);
             }
         }).count();
-        if(count <= 0) {
+        if (count <= 0) {
             StringBuilder sample = new StringBuilder(":center:120% title\n:right date\ncontents...");
-            IntStream.range(0, 6000).map(i -> i % 26 + 'A').forEach(i -> sample.append((char)i));
+            IntStream.range(0, 6000).map(i -> i % 26 + 'A').forEach(i -> sample.append((char) i));
             sample.append("\n:::page-A3-h\nnext page");
             try (PDFPrinter printer = new PDFPrinter()) {
                 Formatter.format(sample.toString(), printer);

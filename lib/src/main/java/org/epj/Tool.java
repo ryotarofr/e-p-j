@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package jp.qpg;
+package org.epj;
 
 import java.util.Iterator;
 import java.util.Locale;
@@ -68,15 +68,18 @@ public class Tool {
 
     /**
      * get stream from iterator
-     * @param <T> Item type
+     * 
+     * @param <T>      Item type
      * 
      * @param iterator iterator
-     * @param size count of item or 0(unknown size)
+     * @param size     count of item or 0(unknown size)
      * @return stream
      */
     public static <T> Stream<T> stream(Iterator<T> iterator, long size) {
-        return StreamSupport.stream(size > 0 ? Spliterators.spliterator(iterator, size, Spliterator.ORDERED | Spliterator.NONNULL)
-                : Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL), false);
+        return StreamSupport.stream(
+                size > 0 ? Spliterators.spliterator(iterator, size, Spliterator.ORDERED | Spliterator.NONNULL)
+                        : Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED | Spliterator.NONNULL),
+                false);
     }
 
     /**
@@ -92,32 +95,32 @@ public class Tool {
         } catch (IllegalStateException e) {
             switch (cell.getCellType()) {
 
-            case BOOLEAN:
-                text = String.valueOf(cell.getBooleanCellValue());
-                break;
-            case STRING:
-                text = cell.getStringCellValue();
-                break;
-            case NUMERIC:
-                text = String.valueOf(cell.getNumericCellValue());
-                break;
-            case ERROR:
-                text = String.valueOf(cell.getErrorCellValue());
-                break;
-            case BLANK:
-                break;
-            case FORMULA:
-                break;
-            case _NONE:
-                break;
+                case BOOLEAN:
+                    text = String.valueOf(cell.getBooleanCellValue());
+                    break;
+                case STRING:
+                    text = cell.getStringCellValue();
+                    break;
+                case NUMERIC:
+                    text = String.valueOf(cell.getNumericCellValue());
+                    break;
+                case ERROR:
+                    text = String.valueOf(cell.getErrorCellValue());
+                    break;
+                case BLANK:
+                    break;
+                case FORMULA:
+                    break;
+                case _NONE:
+                    break;
             }
         }
         return Optional.ofNullable(text).filter(((Predicate<String>) String::isEmpty).negate());
     }
 
     /**
-     * @param text target text
-     * @param left trimming characters of left(no operation when null or empty)
+     * @param text  target text
+     * @param left  trimming characters of left(no operation when null or empty)
      * @param right trimming characters of right(no operation when null or empty)
      * @return trimmed text
      */
@@ -140,7 +143,7 @@ public class Tool {
     /**
      * change file extension
      * 
-     * @param path file path
+     * @param path         file path
      * @param newExtension new extension
      * @return changed file path
      */
@@ -200,8 +203,8 @@ public class Tool {
     /**
      * javascript like substr
      * 
-     * @param text text
-     * @param start start index
+     * @param text   text
+     * @param start  start index
      * @param length length(allow negative)
      * @return sub string
      */

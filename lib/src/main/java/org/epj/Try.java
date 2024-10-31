@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package jp.qpg;
+package org.epj;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -107,7 +107,8 @@ public class Try {
 
     /**
      * throwable supplier
-     * @param <T> Item type
+     * 
+     * @param <T>      Item type
      * @param consumer throwable consumer
      * @return consumer
      */
@@ -127,7 +128,8 @@ public class Try {
 
     /**
      * throwable supplier
-     * @param <T> Argument type
+     * 
+     * @param <T>      Argument type
      * 
      * @param supplier throwable supplier
      * @return supplier
@@ -148,8 +150,9 @@ public class Try {
 
     /**
      * throwable function
-     * @param <T> Argument type
-     * @param <R> Result type
+     * 
+     * @param <T>      Argument type
+     * @param <R>      Result type
      * 
      * @param function throwable function
      * @return function

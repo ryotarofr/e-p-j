@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package jp.qpg;
+package org.epj;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,8 +57,8 @@ public class ExcelTo {
     /**
      * excel to pdf
      * 
-     * @param book excel workbook
-     * @param out output to pdf
+     * @param book          excel workbook
+     * @param out           output to pdf
      * @param documentSetup document setup
      * @throws IOException I/O exception
      */
@@ -77,9 +77,12 @@ public class ExcelTo {
                 logger.info(sheet.getSheetName() + ": " + rowCount + " rows");
                 printer.println("sheet name: " + sheet.getSheetName());
                 printer.println("max row index: " + sheet.getLastRowNum());
-                printer.println("max column index: " + Tool.stream(sheet.rowIterator(), rowCount).mapToInt(Row::getLastCellNum).max().orElse(0));
+                printer.println("max column index: "
+                        + Tool.stream(sheet.rowIterator(), rowCount).mapToInt(Row::getLastCellNum).max().orElse(0));
                 eachCell(sheet, (cell, range) -> Tool.cellValue(cell).ifPresent(
-                        value -> printer.println('[' + (range == null ? new CellReference(cell).formatAsString() : range.formatAsString()) + "] " + value)));
+                        value -> printer.println('['
+                                + (range == null ? new CellReference(cell).formatAsString() : range.formatAsString())
+                                + "] " + value)));
                 eachShape(sheet, shapeText(text -> printer.println("[shape text] " + text)));
                 printer.newPage();
             }
@@ -107,12 +110,13 @@ public class ExcelTo {
      * excel to text
      * 
      * @param book excel workbook
-     * @param out output to text
+     * @param out  output to text
      */
     public static void text(Workbook book, OutputStream out) {
         Objects.requireNonNull(book);
         Objects.requireNonNull(out);
-        try (PrintStream printer = Try.to(() -> new PrintStream(out, true, System.getProperty("file.encoding"))).get()) {
+        try (PrintStream printer = Try.to(() -> new PrintStream(out, true, System.getProperty("file.encoding")))
+                .get()) {
             for (int i = 0, end = book.getNumberOfSheets(); i < end; i++) {
                 Sheet sheet = book.getSheetAt(i);
                 int rowCount = sheet.getPhysicalNumberOfRows();
@@ -123,9 +127,12 @@ public class ExcelTo {
                 logger.info(sheet.getSheetName() + ": " + rowCount + " rows");
                 printer.println("sheet name: " + sheet.getSheetName());
                 printer.println("max row index: " + sheet.getLastRowNum());
-                printer.println("max column index: " + Tool.stream(sheet.rowIterator(), rowCount).mapToInt(Row::getLastCellNum).max().orElse(0));
+                printer.println("max column index: "
+                        + Tool.stream(sheet.rowIterator(), rowCount).mapToInt(Row::getLastCellNum).max().orElse(0));
                 eachCell(sheet, (cell, range) -> Tool.cellValue(cell).ifPresent(
-                        value -> printer.println('[' + (range == null ? new CellReference(cell).formatAsString() : range.formatAsString()) + "] " + value)));
+                        value -> printer.println('['
+                                + (range == null ? new CellReference(cell).formatAsString() : range.formatAsString())
+                                + "] " + value)));
                 sheet.getCellComments().entrySet().forEach(entry -> {
                     printer.println("[comment " + entry.getKey() + "] " + entry.getValue().getString());
                 });
@@ -138,7 +145,7 @@ public class ExcelTo {
     /**
      * traverse all cells
      * 
-     * @param sheet sheet
+     * @param sheet    sheet
      * @param consumer cell consumer
      */
     public static void eachCell(Sheet sheet, BiConsumer<Cell, CellRangeAddress> consumer) {
@@ -166,29 +173,32 @@ public class ExcelTo {
     /**
      * traverse all shape
      * 
-     * @param sheet sheet
+     * @param sheet    sheet
      * @param consumer shape consumer
      */
     public static void eachShape(Sheet sheet, BiConsumer<XSSFSimpleShape, HSSFSimpleShape> consumer) {
         if (sheet instanceof XSSFSheet) {
-            Optional.ofNullable(((XSSFSheet) sheet).getDrawingPatriarch()).ifPresent(drawing -> drawing.getShapes().forEach(shape -> {
-                if (shape instanceof XSSFSimpleShape) {
-                    consumer.accept((XSSFSimpleShape) shape, null);
-                }
-            }));
+            Optional.ofNullable(((XSSFSheet) sheet).getDrawingPatriarch())
+                    .ifPresent(drawing -> drawing.getShapes().forEach(shape -> {
+                        if (shape instanceof XSSFSimpleShape) {
+                            consumer.accept((XSSFSimpleShape) shape, null);
+                        }
+                    }));
         } else if (sheet instanceof HSSFSheet) {
-            Optional.ofNullable(((HSSFSheet) sheet).getDrawingPatriarch()).ifPresent(drawing -> drawing.getChildren().forEach(shape -> {
-                if (shape instanceof HSSFSimpleShape) {
-                    consumer.accept(null, (HSSFSimpleShape) shape);
-                }
-            }));
+            Optional.ofNullable(((HSSFSheet) sheet).getDrawingPatriarch())
+                    .ifPresent(drawing -> drawing.getChildren().forEach(shape -> {
+                        if (shape instanceof HSSFSimpleShape) {
+                            consumer.accept(null, (HSSFSimpleShape) shape);
+                        }
+                    }));
         }
     }
 
     /**
      * command
      * 
-     * @param args [-p password] [-m true|false(draw margin line if true)] Excel files(.xls, .xlsx, .xlsm)
+     * @param args [-p password] [-m true|false(draw margin line if true)] Excel
+     *             files(.xls, .xlsx, .xlsm)
      */
     public static void main(String[] args) {
         Objects.requireNonNull(args);
@@ -196,37 +206,37 @@ public class ExcelTo {
         boolean[] drawMarginLine = { false };
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
-            case "-m":/* set draw margin line */
-                i++;
-                drawMarginLine[0] = Boolean.parseBoolean(args[i]);
-                break;
-            case "-p":/* set password */
-                i++;
-                Biff8EncryptionKey.setCurrentUserPassword(args[i]);
-                break;
-            default:
-                String path = Tool.trim(args[i], "\"", "\"");
-                String toPath = Tool.changeExtension(path, ".pdf");
-                String toTextPath = Tool.changeExtension(path, ".txt");
-                try (InputStream in = Files.newInputStream(Paths.get(path));
-                        Workbook book = WorkbookFactory.create(in);
-                        OutputStream out = Files.newOutputStream(Paths.get(toPath));
-                        OutputStream outText = Files.newOutputStream(Paths.get(toTextPath))) {
-                    logger.info("processing: " + path);
-                    pdf(book, out, printer -> {
-                        printer.setPageSize(PDRectangle.A4, false);
-                        printer.setFontSize(10.5f);
-                        printer.setMargin(15);
-                        printer.setLineSpace(5);
-                        printer.setDrawMarginLine(drawMarginLine[0]);
-                    });
-                    text(book, outText);
-                    logger.info("converted: " + toPath + ", " + toTextPath);
-                    count++;
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-                break;
+                case "-m":/* set draw margin line */
+                    i++;
+                    drawMarginLine[0] = Boolean.parseBoolean(args[i]);
+                    break;
+                case "-p":/* set password */
+                    i++;
+                    Biff8EncryptionKey.setCurrentUserPassword(args[i]);
+                    break;
+                default:
+                    String path = Tool.trim(args[i], "\"", "\"");
+                    String toPath = Tool.changeExtension(path, ".pdf");
+                    String toTextPath = Tool.changeExtension(path, ".txt");
+                    try (InputStream in = Files.newInputStream(Paths.get(path));
+                            Workbook book = WorkbookFactory.create(in);
+                            OutputStream out = Files.newOutputStream(Paths.get(toPath));
+                            OutputStream outText = Files.newOutputStream(Paths.get(toTextPath))) {
+                        logger.info("processing: " + path);
+                        pdf(book, out, printer -> {
+                            printer.setPageSize(PDRectangle.A4, false);
+                            printer.setFontSize(10.5f);
+                            printer.setMargin(15);
+                            printer.setLineSpace(5);
+                            printer.setDrawMarginLine(drawMarginLine[0]);
+                        });
+                        text(book, outText);
+                        logger.info("converted: " + toPath + ", " + toTextPath);
+                        count++;
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                    break;
             }
         }
         logger.info("processed " + count + " files.");

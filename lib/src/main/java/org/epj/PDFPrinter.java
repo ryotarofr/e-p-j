@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package jp.qpg;
+package org.epj;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,9 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 /**
- * PDF printer supported auto line and page break, printer center and right, change font and font size, change page size, change margin, change line spacing
+ * PDF printer supported auto line and page break, printer center and right,
+ * change font and font size, change page size, change margin, change line
+ * spacing
  * 
  * @author nakazawaken1
  */
@@ -165,7 +167,7 @@ public class PDFPrinter implements AutoCloseable {
     /**
      * find index for fit in width
      * 
-     * @param text text
+     * @param text  text
      * @param width max width
      * @return index
      */
@@ -270,7 +272,7 @@ public class PDFPrinter implements AutoCloseable {
         logger.config("create Printer: " + hashCode());
         /* for Japanese */
         String path = System.getenv("WINDIR") + "\\fonts\\msgothic.ttc";
-        if(Files.exists(Paths.get(path))) {
+        if (Files.exists(Paths.get(path))) {
             setFont(path, "MS-Gothic");
         }
     }
@@ -337,7 +339,7 @@ public class PDFPrinter implements AutoCloseable {
             printCenter(text.substring(fit));
             return this;
         }
-        Try.<PDPageContentStream> to(c -> {
+        Try.<PDPageContentStream>to(c -> {
             float left = (max - width) / 2;
             c.newLineAtOffset(left + currentX - currentX0, 0);
             addCurrentX(left);
@@ -363,7 +365,7 @@ public class PDFPrinter implements AutoCloseable {
             printRight(text.substring(fit));
             return this;
         }
-        Try.<PDPageContentStream> to(c -> {
+        Try.<PDPageContentStream>to(c -> {
             float left = max - width;
             c.newLineAtOffset(left + currentX - currentX0, 0);
             addCurrentX(left);
@@ -404,7 +406,7 @@ public class PDFPrinter implements AutoCloseable {
                     i.setLineDashPattern(new float[] { 3f, 1f }, 0);
                     i.stroke();
                 }
-                if(drawDebugPoint) {
+                if (drawDebugPoint) {
                     debugPoints.forEach(Try.to(p -> {
                         i.moveTo(p, pageSize.getHeight() - marginTop / 2);
                         i.lineTo(p, pageSize.getHeight());
@@ -465,7 +467,7 @@ public class PDFPrinter implements AutoCloseable {
     }
 
     /**
-     * @param vertical top and bottom margin
+     * @param vertical   top and bottom margin
      * @param horizontal left and right margin
      * @return this
      */
@@ -476,10 +478,10 @@ public class PDFPrinter implements AutoCloseable {
     }
 
     /**
-     * @param top top margin
+     * @param top    top margin
      * @param bottom bottom margin
-     * @param left left margin
-     * @param right right margin
+     * @param left   left margin
+     * @param right  right margin
      * @return this
      */
     public PDFPrinter setMargin(float top, float bottom, float left, float right) {
@@ -491,7 +493,7 @@ public class PDFPrinter implements AutoCloseable {
     }
 
     /**
-     * @param page page size
+     * @param page        page size
      * @param isLandscape true: landscape, false: portrait
      * @return this
      */
