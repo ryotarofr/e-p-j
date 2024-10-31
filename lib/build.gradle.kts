@@ -9,9 +9,13 @@ plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
     `maven-publish`
+    id("java")
+    id("com.github.johnrengelman.shadow") version "8.1.1" // Shadowプラグインを追加
 }
 
-version = "0.0.1"
+
+group = "org.epj"
+version = "1.0-SNAPSHOT"
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -32,13 +36,17 @@ dependencies {
     implementation(libs.guava)
 
     // PDFBox
-    implementation("org.apache.pdfbox:pdfbox:2.0.12")
+    implementation("org.apache.pdfbox:pdfbox:2.0.26")
 
     // Apache POI for Excel (OOXML)
-    implementation("org.apache.poi:poi-ooxml:4.0.0")
+    implementation("org.apache.poi:poi-ooxml:5.2.2")
 
     // Excel Cell Formatter
     implementation("com.github.mygreen:excel-cellformatter:0.10")
+
+    // SLF4J with Log4j 2 binding
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.2")
+
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -56,3 +64,21 @@ tasks.named<Test>("test") {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
+
+tasks.register<Jar>("ExcelToJar") {
+    archiveBaseName.set("ExcelTo")
+    manifest {
+        attributes["Main-Class"] = "org.epj.ExcelTo"
+    }
+    from(sourceSets.main.get().output)
+}
+
+tasks.register<Jar>("ParserJar") {
+    archiveBaseName.set("Parser")
+    manifest {
+        attributes["Main-Class"] = "org.epj.Parser"
+    }
+    from(sourceSets.main.get().output)
+}
+
+// 必要に応じて他のクラスのタスクも追加
